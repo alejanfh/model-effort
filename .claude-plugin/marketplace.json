@@ -1,0 +1,6 @@
+{
+  "name": "model-effort",
+  "owner": { "name": "alejanfh" },
+  "description": "A Claude Code mod that tells you whether the model and effort you picked fit your task.",
+  "plugins": [{ "name": "model-effort", "source": "./" }]
+}
