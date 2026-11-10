@@ -2,9 +2,9 @@
 
 > **Based on Anthropic's guidance** in the article [Which Claude model should you build with? Fable, Opus, Sonnet, or Haiku](https://claude.dev/blog/which-claude-model-should-you-build-with/) by Addy Osmani (claude.dev blog, November 2026). The rules this mod uses to pick a model come from my reading of that article. This is an independent project, not an official Anthropic tool.
 
-[![Watch the demo (37 s)](assets/demo-poster.jpg)](assets/demo.mp4)
+![model-effort demo](assets/demo.gif)
 
-*Click the picture to watch the 37-second demo. It is an animation that recreates what the mod shows.*
+*A 37-second animation that recreates what the mod shows.*
 
 A small mod for Claude Code that answers one question: **is the model I picked the right one for this task?**
 
@@ -96,7 +96,7 @@ What is done and what I think is still missing. Ideas and pull requests are welc
 - `hooks/register.tsx`: the whole mod.
 - `types/index.d.ts`: the type of the values it keeps.
 - `.claude-plugin/`: the plugin and marketplace manifests.
-- `assets/`: the demo video and the screenshots used in this README.
+- `assets/`: the demo GIF and the screenshots used in this README.
 
 ## License
 
