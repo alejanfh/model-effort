@@ -49,7 +49,7 @@ Say `y` to add the marketplace, then pick a scope. It works in the terminal and 
 ## How it works
 
 1. You send a message.
-2. In the background, the mod sends your message to Haiku (low effort) with a short guide: Haiku for simple things, Sonnet for everyday work, Opus for architecture and hard problems.
+2. In the background, the mod sends your message to Haiku (low effort), together with the last few messages of the conversation for context and a short guide: Haiku for pure questions, Sonnet for real work with files, commands and debugging, Opus for architecture and hard problems. A short message like "ok, do it" is judged by the work it leads to, not by its length.
 3. Haiku answers with the model and effort it thinks are enough, and a short reason.
 4. The mod reads the model and effort your session really used and draws the verdict above the prompt box.
 
@@ -57,10 +57,10 @@ The check runs while Claude is already working, so it never delays your message.
 
 ## Good to know
 
-- **It is an opinion, not a rule.** Haiku can be wrong. It is told to pick the *minimum* that does the task well, so it will say "Overkill" fairly often.
+- **It is an opinion, not a rule.** Haiku can be wrong, and it only sees your message and the last few messages, not your whole project. It is told to pick the cheapest model that will do the task reliably, and never Haiku for work that needs tools, several steps or debugging.
+- **The conversation is sent to Haiku too.** The last few messages (cut short) go along with your request so it can judge the task. Nothing is stored or sent anywhere else.
 - **The verdict arrives after you send.** By then the model has already started. Cancelling and re-asking with a cheaper model saves tokens only when the answer is going to be long. Switching models also loses the prompt cache, so for short chats the saving is small. The best moment to use the verdict is at the start of a new session.
 - **It costs a little.** Each check is one small Haiku call (low effort, at most 200 tokens of reply). It counts toward your usage.
-- Your message is sent to Haiku only to be judged. The mod stores and sends nothing anywhere else.
 
 ## Files
 

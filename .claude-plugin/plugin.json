@@ -1,6 +1,6 @@
 {
   "name": "model-effort",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Tells you, above the prompt box, whether the model and effort you picked fit the task you just typed.",
   "author": { "name": "alejanfh" },
   "license": "MIT",

@@ -18,13 +18,14 @@ const EFFORT_LABEL: Record<Effort, string> = {
 }
 const TIER_LABEL: Record<Tier, string> = { haiku: 'Haiku', sonnet: 'Sonnet', opus: 'Opus' }
 
-const SYSTEM = `You are an advisor that decides which Claude model and which effort level a coding task needs in Claude Code.
+const SYSTEM = `You are an advisor that decides which Claude model and which effort level the user's latest request needs in Claude Code.
+You are shown the recent conversation for context, then the latest request. Judge the WORK the request leads to, not how short the message is: "ok, do it" or "create the video" can be a big job.
 Models, from least to most capable (and expensive):
-- haiku: short questions, lookups, renames, one-line changes, explaining something simple, greetings.
-- sonnet: most everyday work: implementing features, fixing clear bugs, tests, scoped refactors.
-- opus: architecture or system design, hard bugs, large changes across many files, delicate reasoning.
-Effort: low (fast, trivial), medium (normal), high (think it through), xhigh or max (very hard, only when really needed).
-Pick the MINIMUM that does the task well.
+- haiku: ONLY pure questions and lookups, greetings, explaining something simple, a rename or one-line edit. No files to create, no commands to run, nothing to debug.
+- sonnet: any real agentic work: creating or editing files, running commands, tests, builds, scripts, debugging, multi-step tasks, scoped refactors, building a small tool or video. This is the right default for most coding work.
+- opus: architecture or system design, very hard or subtle bugs, large changes across many files, delicate reasoning where a mistake is costly.
+Effort: low (trivial and fast), medium (normal), high (think it through), xhigh or max (very hard, only when really needed).
+Pick the cheapest model that will do the whole task well and reliably on the first try. Do not pick haiku if the task needs tools, several steps or debugging.
 Answer with a single line of JSON and nothing else:
 {"model":"haiku|sonnet|opus","effort":"low|medium|high|xhigh|max","reason":"at most 12 words, in the same language as the task"}`
 
@@ -58,6 +59,22 @@ function parseVerdict(text: string): Verdict {
   }
 }
 
+type Row = { role: 'user' | 'assistant'; text: string; toolUses: readonly { tool: string }[] }
+
+// The last few messages as plain text, with a count of the tools the assistant used.
+function recentContext(rows: readonly Row[]): string {
+  const lines: string[] = []
+  for (const row of rows.slice(-8)) {
+    const text = row.text.replace(/\s+/g, ' ').trim().slice(0, 500)
+    const tools = new Map<string, number>()
+    for (const use of row.toolUses) tools.set(use.tool, (tools.get(use.tool) ?? 0) + 1)
+    const used = [...tools].map(([name, n]) => `${name} x${n}`).join(', ')
+    if (text === '' && used === '') continue
+    lines.push(`${row.role}: ${text}${used ? ` [tools: ${used}]` : ''}`)
+  }
+  return lines.join('\n')
+}
+
 export const register: Register = on => {
   // Each prompt the person types is judged by Haiku in the background.
   on('prompt.submit', async ($, e, next) => {
@@ -70,10 +87,16 @@ export const register: Register = on => {
       // never hold up the prompt over the band
     }
     $.clock.after(1, async () => {
+      let context = ''
+      try {
+        context = recentContext(await $.session.messages())
+      } catch {
+        // judge the message alone if the transcript cannot be read
+      }
       const r = await $.model.complete({
         model: 'haiku',
         system: SYSTEM,
-        prompt: `Task:\n${task}`,
+        prompt: `${context ? `Recent conversation:\n${context}\n\n` : ''}Latest request:\n${task}`,
         effort: 'low',
         maxTokens: 200,
         timeoutMs: 20000,
